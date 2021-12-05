@@ -10,7 +10,7 @@ type CodejarOptions = {
   catchTab: boolean;
   preserveIdent: boolean;
   history: boolean;
-  window: Window;
+  window: typeof window;
   addClosing: boolean;
 };
 
@@ -18,7 +18,7 @@ interface Props {
   highlight: (e: HTMLElement) => void;
   options?: Partial<CodejarOptions>;
   code: string;
-  style: React.CSSProperties;
+  style?: React.CSSProperties;
   onUpdate: (code: string) => void;
   lineNumbers?: boolean;
 }
@@ -48,6 +48,13 @@ export const useCodeJar = (props: Props) => {
 
     return () => jar.current!.destroy();
   }, []);
+
+  // create a new highlighter on highlight function change
+  React.useEffect(() => {
+    if (!jar.current || !editorRef.current) return;
+    jar.current?.destroy();
+    jar.current = CodeJar(editorRef.current, props.highlight, props.options);
+  }, [props.highlight]);
 
   React.useEffect(() => {
     if (!jar.current || !editorRef.current) return;
